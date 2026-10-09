@@ -1,0 +1,1067 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Soirée</title>
+<meta name="theme-color" content="#f2f2f7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Soirée">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<script>
+// Set theme + accent before first paint to avoid a flash.
+(function(){try{var s=JSON.parse(localStorage.getItem('soiree.settings')||'{}');var t=s.theme||'system';
+var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);
+document.documentElement.dataset.theme=d?'dark':'light';
+if(s.accent)document.documentElement.style.setProperty('--accent',s.accent);}catch(e){}})();
+</script>
+<style>
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+:root{
+  --accent:#0a84ff;--on-accent:#fff;
+  --bg:#f2f2f7;--surface:#fff;--raised:#fff;--label:#000;--label2:rgba(60,60,67,.6);--label3:rgba(60,60,67,.3);
+  --sep:rgba(60,60,67,.16);--fill:rgba(120,120,128,.12);--fill2:rgba(120,120,128,.2);--glass:rgba(249,249,251,.78);--thumb:#fff;
+  --green:#34c759;--red:#ff3b30;--orange:#ff9f0a;
+  /* springs as CSS easing: soft for layout, lively for small controls */
+  --soft:linear(0,.2 5%,.62 12%,.88 20%,1.02 30%,1.04 38%,1.02 48%,1.005 60%,1);
+  --spring:linear(0,.009,.035 2.1%,.141,.281 6.7%,.723 12.9%,.938 16.7%,1.017,1.077,1.121,1.149 24.3%,1.159,1.163,1.161,1.154 29.9%,1.129 32.8%,1.051 39.6%,1.017 43.1%,.991,.977 51%,.974 53.8%,.975 57.1%,.997 69.8%,1.003 76.9%,1.004 83.8%,1);
+  /* concentric radii: inner = outer - padding */
+  --r-lg:28px;--r-md:20px;--r-sm:12px;
+  color-scheme:light;
+}
+[data-theme=dark]{
+  --bg:#000;--surface:#1c1c1e;--raised:#2c2c2e;--label:#fff;--label2:rgba(235,235,245,.62);--label3:rgba(235,235,245,.3);
+  --sep:rgba(84,84,88,.55);--fill:rgba(120,120,128,.24);--fill2:rgba(120,120,128,.36);--glass:rgba(30,30,32,.78);--thumb:#636366;color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg);color:var(--label);-webkit-text-size-adjust:100%}
+body{margin:0;font:400 17px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100dvh;overflow-x:hidden}
+button,input,textarea,select{font:inherit;color:inherit}
+button{border:0;background:none;padding:0;cursor:pointer;-webkit-user-select:none;user-select:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+.sq{border-radius:var(--rad,var(--r-md))}
+@supports (corner-shape:squircle){.sq,.poster,.sheet,.modal-card,.group,.btn,.app-icon{corner-shape:squircle}}
+.ios-app body::before{content:'';position:fixed;left:0;right:0;top:0;height:calc(env(safe-area-inset-top,0px) + 4px);background:linear-gradient(rgba(0,0,0,.6),transparent);z-index:9000;pointer-events:none}
+
+/* ---------- views ---------- */
+.view{min-height:100dvh}
+.view.enter{animation:vin .6s var(--soft) both}
+@keyframes vin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+::view-transition-group(poster){animation-duration:.65s;animation-timing-function:var(--soft)}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.3s}
+.wrap{max-width:640px;margin:0 auto;padding:0 20px}
+.narrow{max-width:420px;margin:0 auto;padding:0 20px}
+
+/* ---------- bars + buttons ---------- */
+.bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:calc(env(safe-area-inset-top,0px) + 8px) 16px 8px;min-height:calc(env(safe-area-inset-top,0px) + 56px);
+  transition:background .3s,box-shadow .3s}
+.bar.scrolled{background:var(--glass);-webkit-backdrop-filter:blur(24px) saturate(1.8);backdrop-filter:blur(24px) saturate(1.8);box-shadow:0 .5px 0 var(--sep)}
+.bar .ttl{position:absolute;left:50%;transform:translateX(-50%);font-weight:600;font-size:17px;opacity:0;transition:opacity .25s;max-width:50%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.bar.scrolled .ttl,.bar.solid .ttl{opacity:1}
+.bar .side{display:flex;gap:10px;align-items:center;z-index:1}
+.rb{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);
+  box-shadow:0 0 0 .5px var(--sep),0 2px 8px rgba(0,0,0,.06);transition:transform .45s var(--spring)}
+.rb:active{transform:scale(.88)}
+.rb.accent{background:var(--accent);color:var(--on-accent);box-shadow:0 4px 14px -2px color-mix(in srgb,var(--accent) 60%,transparent)}
+.rb.sm{width:30px;height:30px}
+.tbtn{font-size:17px;color:var(--accent);padding:8px 4px}
+.tbtn.b{font-weight:600}
+.ico{display:inline-grid;place-items:center}
+.ico svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:50px;padding:0 22px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-weight:600;font-size:17px;transition:transform .45s var(--spring),opacity .2s}
+.btn:active{transform:scale(.96)}
+.btn.sec{background:var(--fill);color:var(--accent)}
+.btn.danger{background:var(--fill);color:var(--red)}
+.btn.block{width:100%}
+.btn.sm{height:36px;padding:0 16px;font-size:15px}
+.btn[disabled]{opacity:.4;pointer-events:none}
+
+/* ---------- home ---------- */
+.large{font-size:34px;line-height:1.1;font-weight:800;letter-spacing:-.03em;margin:4px 0 14px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px 16px;margin-top:20px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 40px)}
+@media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}}
+.card{display:block;text-align:left;width:100%;transition:transform .5s var(--spring)}
+.card:active{transform:scale(.96)}
+.card .cap{padding:10px 4px 0;font-size:13px;color:var(--label2)}
+.card .cap b{display:block;color:var(--label);font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty{text-align:center;padding:64px 20px;display:grid;justify-items:center;gap:10px}
+.empty .app-icon{margin-bottom:8px}
+.empty p{color:var(--label2);max-width:300px}
+.empty .btn{margin-top:14px}
+.banner{display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface);--rad:var(--r-md);margin-bottom:6px}
+.banner .bt{flex:1;min-width:0;font-size:13px;color:var(--label2);line-height:1.3}
+.banner .bt b{display:block;font-size:15px;color:var(--label)}
+.app-icon{width:60px;height:60px;border-radius:14px;background:linear-gradient(135deg,#ff9a5a,#ff5e7e 50%,#7b5cff);display:grid;place-items:center;color:#fff;box-shadow:0 8px 20px -6px rgba(123,92,255,.5)}
+.app-icon svg{width:56%;height:56%;fill:#fff}
+.app-icon.sm{width:40px;height:40px;border-radius:10px}
+.app-icon.lg{width:96px;height:96px;border-radius:22px}
+
+/* ---------- segmented, switch, groups ---------- */
+.seg{position:relative;display:grid;grid-template-columns:repeat(var(--n),1fr);background:var(--fill);border-radius:10px;padding:2px}
+.seg-thumb{position:absolute;top:2px;bottom:2px;left:2px;width:calc((100% - 4px)/var(--n));background:var(--thumb);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.18),0 0 0 .5px rgba(0,0,0,.04);transform:translateX(calc(var(--i)*100%));transition:transform .55s var(--spring)}
+.seg-b{position:relative;z-index:1;padding:6px 6px;font-size:13px;font-weight:500;min-height:32px}
+.seg-b.on{font-weight:600}
+.seg.big .seg-b{font-size:15px;min-height:36px}
+.sw{width:51px;height:31px;border-radius:99px;background:var(--fill2);position:relative;flex:none;transition:background .3s}
+.sw::after{content:'';position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.28);transition:transform .5s var(--spring)}
+.sw[aria-checked=true]{background:var(--green)}
+.sw[aria-checked=true]::after{transform:translateX(20px)}
+.group{background:var(--surface);border-radius:var(--r-md);overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;padding:0 16px;min-height:50px;position:relative}
+.row+.row::before{content:'';position:absolute;left:16px;right:0;top:0;height:.5px;background:var(--sep)}
+.row>label,.row>.lab{flex:none;color:var(--label)}
+.row .val{margin-left:auto;color:var(--label2);font-size:15px}
+.row input:not([type=range]):not([type=color]):not([type=checkbox]),.row textarea{flex:1;min-width:0;border:0;background:none;outline:0;padding:14px 0;font-size:17px;border-radius:0}
+.row textarea{resize:none;min-height:88px;line-height:1.35}
+.row input[type=datetime-local]{text-align:right;min-height:48px}
+.row input::placeholder,.row textarea::placeholder{color:var(--label3)}
+.row.col{flex-direction:column;align-items:stretch;gap:6px;padding:12px 16px}
+.row.col .top{display:flex;justify-content:space-between}
+.row input[type=range]{width:100%;accent-color:var(--accent)}
+.h{font-size:13px;font-weight:500;color:var(--label2);margin:24px 16px 8px}
+.note{font-size:13px;color:var(--label2);margin:8px 16px 0;line-height:1.4}
+input[type=color]{width:34px;height:34px;border:0;padding:0;border-radius:50%;background:none;cursor:pointer;-webkit-appearance:none;appearance:none;flex:none}
+input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+input[type=color]::-webkit-color-swatch{border:2px solid var(--surface);box-shadow:0 0 0 1px var(--sep);border-radius:50%}
+input[type=color]::-moz-color-swatch{border:2px solid var(--surface);border-radius:50%}
+.chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px}
+.chip{padding:8px 14px;border-radius:999px;background:var(--fill);font-size:15px;transition:transform .4s var(--spring),background .2s;display:inline-flex;align-items:center;gap:6px}
+.chip:active{transform:scale(.94)}
+.chip.on{background:var(--accent);color:var(--on-accent)}
+.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 16px}
+.sw-p{aspect-ratio:1;--rad:var(--r-sm);transition:transform .45s var(--spring);box-shadow:inset 0 0 0 .5px rgba(0,0,0,.12)}
+.sw-p:active{transform:scale(.9)}
+.sw-p.on{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--accent)}
+.colors{display:flex;gap:14px;align-items:center;padding:12px 16px}
+.emoji-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding:10px}
+.emoji-grid button{font-size:30px;line-height:1;aspect-ratio:1;border-radius:12px;transition:transform .4s var(--spring),background .2s}
+.emoji-grid button:active{transform:scale(.8);background:var(--fill)}
+.meter{height:8px;border-radius:99px;background:var(--fill);overflow:hidden;margin:2px 0 4px}
+.meter i{display:block;height:100%;width:0;border-radius:99px;background:var(--green);transition:width .6s var(--soft),background .3s}
+.stack{display:grid;gap:10px;padding:0 0 4px}
+
+/* ---------- poster (the invite itself) ---------- */
+.pw{container-type:inline-size;width:100%;aspect-ratio:3/4;position:relative}
+.poster{position:absolute;inset:0;overflow:hidden;border-radius:calc(var(--c,8.9) * 1cqw);isolation:isolate;color:#fff;background:#888;
+  box-shadow:0 1px 2px rgba(0,0,0,.08),0 22px 44px -14px rgba(0,0,0,.4)}
+.poster[data-ink=dark]{color:#1d1d1f}
+.poster>*{position:absolute}
+.p-bg,.p-sharp,.p-tint,.p-shim{inset:0;width:100%;height:100%}
+.p-bg{transform:scale(var(--bs,1));background-size:cover;background-position:center}
+.p-sharp{object-fit:cover;opacity:0;transition:opacity .7s;transform:scale(var(--bs,1))}
+.p-sharp.on{opacity:1}
+.p-shim{display:none;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.35) 50%,transparent 65%);background-size:250% 100%;mix-blend-mode:soft-light}
+.poster.shim .p-shim{display:block;animation:shim 3.6s linear infinite}
+@keyframes shim{from{background-position:130% 0}to{background-position:-130% 0}}
+.p-fx{inset:0;width:100%;height:100%;pointer-events:none}
+.p-content{inset:0;padding:9cqw;display:flex;flex-direction:column;gap:1.2cqw;font-family:var(--ff);pointer-events:none}
+.lo-center .p-content{justify-content:center;align-items:center;text-align:center}
+.lo-left .p-content{justify-content:flex-start;align-items:flex-start;text-align:left;padding-top:14cqw}
+.lo-bottom .p-content{justify-content:flex-end;align-items:flex-start;text-align:left}
+.p-title{font-size:12.5cqw;line-height:1.03;font-weight:var(--fw,800);letter-spacing:var(--ls,-.035em);text-transform:var(--tt,none);overflow-wrap:anywhere;text-wrap:balance;max-width:100%}
+.p-title.ph{opacity:.45}
+.p-when{margin-top:3cqw;font-size:4.6cqw;font-weight:600;line-height:1.25;white-space:pre-line}
+.p-host,.p-loc{font-size:4.1cqw;opacity:.86;line-height:1.3}
+.p-desc{margin-top:3cqw;font-size:3.7cqw;opacity:.84;line-height:1.38;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;max-width:100%;white-space:pre-line}
+.poster[data-ink=light] .p-content{text-shadow:0 1px 14px rgba(0,0,0,.16)}
+.mini .p-desc,.mini .p-host,.mini .p-loc{display:none}
+.mini .p-title{font-size:13cqw}
+.p-stk{inset:0;pointer-events:none}
+.stk{position:absolute;line-height:1;transform:translate(-50%,-50%) rotate(var(--r,0deg));font-size:calc(var(--s,18) * 1cqw);filter:drop-shadow(0 1cqw 1.6cqw rgba(0,0,0,.25));user-select:none;-webkit-user-select:none;touch-action:none;border-radius:3cqw}
+.edit .stk{pointer-events:auto;cursor:grab}
+.edit .stk.sel{outline:.5cqw dashed rgba(255,255,255,.9);outline-offset:1cqw}
+
+/* ---------- editor ---------- */
+.editor{position:relative;overflow:hidden;overflow:clip;height:100dvh;min-height:0}
+.editor .bar{position:fixed;left:0;right:0}
+.stage{position:fixed;inset:0;overflow:hidden}
+.fit{position:absolute;left:50%;top:0;width:var(--w0,340px);transform-origin:top center;transform:translate(-50%,var(--ty,70px)) scale(var(--s,1));transition:transform .65s var(--soft)}
+.sheet{position:fixed;left:0;right:0;bottom:0;height:var(--sh,80dvh);max-width:640px;margin:0 auto;display:flex;flex-direction:column;
+  background:var(--glass);-webkit-backdrop-filter:blur(32px) saturate(1.8);backdrop-filter:blur(32px) saturate(1.8);
+  border-radius:var(--r-lg) var(--r-lg) 0 0;box-shadow:0 -.5px 0 var(--sep),0 -18px 50px rgba(0,0,0,.14);
+  transform:translateY(var(--sy,60%));transition:transform .6s var(--soft);z-index:40}
+.sheet-head{touch-action:none;padding:8px 16px 10px;cursor:grab}
+.grab{width:36px;height:5px;border-radius:3px;background:var(--label3);margin:0 auto 10px}
+.sheet-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 16px calc(env(safe-area-inset-bottom,0px) + 40px + var(--hid,0px));-webkit-overflow-scrolling:touch}
+@media(min-width:900px){
+  .editor{display:grid;grid-template-columns:1fr 460px;height:100dvh}
+  .stage{position:relative;inset:auto}
+  .sheet{position:relative;transform:none!important;max-width:none;height:100dvh;border-radius:0;box-shadow:-.5px 0 0 var(--sep);padding-top:calc(env(safe-area-inset-top,0px) + 56px)}
+  .grab{display:none}
+  .sheet-head{cursor:default}
+  .editor .bar{background:none}
+}
+
+/* ---------- invite detail ---------- */
+.hero{max-width:380px;margin:4px auto 0;padding:0 20px}
+.until{display:flex;justify-content:center;margin:18px 0 6px}
+.until span{padding:7px 14px;border-radius:999px;background:var(--fill);font-size:15px;font-weight:600}
+.actions{display:grid;gap:10px;margin:18px 0 8px}
+.actions .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.detail-row{display:flex;gap:14px;align-items:center;padding:12px 16px;position:relative;min-height:60px}
+.detail-row+.detail-row::before{content:'';position:absolute;left:62px;right:0;top:0;height:.5px;background:var(--sep)}
+.detail-row .ci{width:34px;height:34px;border-radius:10px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;flex:none}
+.detail-row .ci svg{width:19px;height:19px}
+.detail-row b{display:block;font-weight:600}
+.detail-row small{display:block;color:var(--label2);font-size:14px;line-height:1.3}
+.detail-row a{color:inherit;text-decoration:none}
+.stats{display:grid;grid-template-columns:repeat(3,1fr)}
+.stats div{padding:14px 8px;text-align:center;position:relative}
+.stats div+div::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:.5px;background:var(--sep)}
+.stats b{display:block;font-size:30px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.stats span{font-size:13px;color:var(--label2)}
+.guest{display:flex;align-items:center;gap:12px;padding:10px 16px;position:relative}
+.guest+.guest::before{content:'';position:absolute;left:62px;right:0;top:0;height:.5px;background:var(--sep)}
+.av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:15px;color:#fff;flex:none}
+.guest .nm{flex:1;min-width:0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.guest .st{font-size:15px;font-weight:500}
+.st.g{color:var(--green)}.st.m{color:var(--orange)}.st.n{color:var(--label2)}
+.sechead{display:flex;justify-content:space-between;align-items:baseline;margin:28px 16px 8px}
+.sechead h3{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.rsvp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rsvp button{padding:14px 4px;border-radius:var(--r-sm);background:var(--fill);font-weight:600;font-size:15px;display:grid;gap:4px;justify-items:center;transition:transform .45s var(--spring),background .25s,color .25s}
+.rsvp button:active{transform:scale(.94)}
+.rsvp button span{font-size:22px;line-height:1}
+.rsvp button.on{background:var(--accent);color:var(--on-accent)}
+.stepper{display:flex;align-items:center;gap:14px;margin-left:auto}
+.stepper button{width:32px;height:32px;border-radius:50%;background:var(--fill);font-size:20px;line-height:1;display:grid;place-items:center}
+.stepper b{min-width:18px;text-align:center}
+.foot{text-align:center;padding:28px 0 calc(env(safe-area-inset-bottom,0px) + 40px)}
+.linkbtn{color:var(--accent);font-size:15px;padding:8px}
+.pastebox{display:grid;gap:10px;margin-top:10px}
+.pastebox textarea{width:100%;min-height:76px;border:0;border-radius:var(--r-sm);background:var(--fill);padding:12px;resize:none;font-size:15px;outline:0}
+
+/* ---------- gate ---------- */
+.gate{display:grid;place-items:center;padding:calc(env(safe-area-inset-top,0px) + 24px) 24px calc(env(safe-area-inset-bottom,0px) + 24px);
+  background:radial-gradient(120% 70% at 20% 0%,color-mix(in srgb,#ff9a5a 40%,transparent),transparent 60%),radial-gradient(100% 60% at 100% 100%,color-mix(in srgb,#7b5cff 40%,transparent),transparent 60%),var(--bg)}
+.gate-card{width:100%;max-width:400px;display:grid;gap:14px;justify-items:center;text-align:center}
+.gate h1{font-size:30px;line-height:1.12;font-weight:800;letter-spacing:-.03em;text-wrap:balance}
+.gate .lead{color:var(--label2);text-wrap:pretty}
+.steps{list-style:none;margin:14px 0 4px;padding:0;width:100%;display:grid;gap:10px;text-align:left;counter-reset:s}
+.steps li{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--glass);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-radius:var(--r-md);counter-increment:s;font-weight:500}
+.steps li::before{content:counter(s);width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-size:14px;font-weight:700;flex:none}
+.steps li .ico{margin-left:auto;color:var(--accent)}
+.fine{font-size:13px;color:var(--label2)}
+
+/* ---------- modal (settings) ---------- */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;opacity:0;transition:opacity .35s}
+.scrim.in{opacity:1}
+.modal-card{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:560px;height:min(92dvh,860px);background:var(--bg);border-radius:var(--r-lg) var(--r-lg) 0 0;z-index:101;
+  transform:translateY(100%);transition:transform .6s var(--soft);display:flex;flex-direction:column;overflow:hidden}
+.modal-card.in{transform:none}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:8px 16px 8px;touch-action:none}
+.modal-head h2{font-size:17px;font-weight:600}
+.modal-body{flex:1;overflow-y:auto;padding:0 16px calc(env(safe-area-inset-bottom,0px) + 40px);overscroll-behavior:contain}
+.accents{display:flex;flex-wrap:wrap;gap:12px;padding:14px 16px;align-items:center}
+.accents button{width:34px;height:34px;border-radius:50%;transition:transform .45s var(--spring)}
+.accents button:active{transform:scale(.85)}
+.accents button.on{box-shadow:0 0 0 2.5px var(--surface),0 0 0 4.5px currentColor}
+.mock{margin:14px 16px;height:92px;border-radius:var(--r-md);background:#000;position:relative;overflow:hidden;display:grid;place-items:start center}
+.mock .pill{position:absolute;top:18px;left:50%;width:126px;height:37px;margin-left:-63px;border-radius:99px;background:#000}
+.mock .island{top:14px}
+.chev{opacity:.4}
+
+/* ---------- dynamic island ring ---------- */
+.island{position:fixed;left:50%;pointer-events:none;z-index:9999;filter:drop-shadow(0 0 5px rgba(255,255,255,.28))}
+.mock .island{position:absolute}
+.ring{width:100%;height:100%;padding:var(--rw,3px);border-radius:999px;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.ring.spin{animation:spin 3.2s linear infinite}
+.ring.pulse{animation:pulse 2.4s ease-in-out infinite}
+@keyframes spin{to{--ang:360deg}}
+@keyframes pulse{50%{opacity:.35}}
+
+/* ---------- toast ---------- */
+#toasts{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 24px);display:grid;justify-items:center;gap:8px;z-index:200;pointer-events:none}
+.toast{padding:12px 18px;border-radius:999px;background:var(--glass);-webkit-backdrop-filter:blur(24px) saturate(1.8);backdrop-filter:blur(24px) saturate(1.8);box-shadow:0 0 0 .5px var(--sep),0 10px 30px rgba(0,0,0,.18);font-size:15px;font-weight:500;animation:tin .6s var(--spring) both}
+.toast.out{animation:tout .3s ease both}
+@keyframes tin{from{opacity:0;transform:translateY(20px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes tout{to{opacity:0;transform:translateY(10px) scale(.95)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toasts" aria-live="polite"></div>
+<script>
+'use strict';
+/* =====================================================================
+   Soirée: static, serverless invites. The invite is the link.
+   ===================================================================== */
+
+/* ---------- config ---------- */
+const GATE_GUESTS = false;      // true = guests opening a shared link must also install on iOS
+const PHOTO_BUDGET = 5000;      // bytes of photo allowed inside a link
+const LINK_GOOD = 3500, LINK_OK = 9000;
+
+/* ---------- tiny helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const uid = () => Math.random().toString(36).slice(2, 10);
+function el(tag, attrs, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v === false || v == null) continue;
+    if (k === 'class') n.className = v;
+    else if (k === 'style') n.style.cssText = v;
+    else if (k === 'html') n.innerHTML = v;
+    else if (k === 'value' || k === 'checked') n[k] = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat(Infinity)) { if (c == null || c === false) continue; n.append(c.nodeType ? c : document.createTextNode(c)); }
+  return n;
+}
+const ICONS = {
+  plus: '<path d="M12 5v14M5 12h14"/>', back: '<path d="M15 5l-7 7 7 7"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>',
+  sliders: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+  calendar: '<rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  pin: '<path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+  person: '<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1-4 4-5.5 7.5-5.5s6.5 1.5 7.5 5.5"/>',
+  share: '<path d="M12 15V3.5M8 7l4-4 4 4"/><path d="M7 11H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/>',
+  copy: '<rect x="8.5" y="8.5" width="12" height="12" rx="3"/><path d="M15.5 8.5V6A2.5 2.5 0 0 0 13 3.5H6A2.5 2.5 0 0 0 3.5 6v7A2.5 2.5 0 0 0 6 15.5h2.5"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12.5a2 2 0 0 0 2 1.5h6a2 2 0 0 0 2-1.5L18 7M9 7V4.5h6V7"/>',
+  pencil: '<path d="M4 20l1-4L16.5 4.5a2 2 0 0 1 3 3L8 19z"/>',
+  sparkle: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M18.5 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'
+};
+const ico = (n, s = 22) => el('span', { class: 'ico', html: `<svg width="${s}" height="${s}" viewBox="0 0 24 24">${ICONS[n]}</svg>` });
+const SPARK = '<svg viewBox="0 0 24 24"><path d="M12 2.5l2.1 6.4 6.4 2.1-6.4 2.1L12 19.5l-2.1-6.4-6.4-2.1 6.4-2.1z"/></svg>';
+
+function toast(msg) {
+  const t = el('div', { class: 'toast' }, msg); $('#toasts').append(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, 2200);
+}
+async function copyText(s) {
+  try { await navigator.clipboard.writeText(s); return true; } catch (e) {
+    const t = el('textarea', { style: 'position:fixed;opacity:0' }); t.value = s; document.body.append(t); t.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (e2) {} t.remove(); return ok;
+  }
+}
+function seg(opts, val, cb, cls = '') {
+  const idx = Math.max(0, opts.findIndex(o => o[0] === val));
+  const root = el('div', { class: 'seg ' + cls, style: `--n:${opts.length};--i:${idx}`, role: 'tablist' }, el('span', { class: 'seg-thumb' }),
+    opts.map(([v, label], i) => el('button', { type: 'button', class: 'seg-b' + (i === idx ? ' on' : ''), onclick: () => {
+      root.style.setProperty('--i', i);
+      root.querySelectorAll('.seg-b').forEach((b, j) => b.classList.toggle('on', j === i));
+      cb(v, i);
+    } }, label)));
+  return root;
+}
+function toggle(on, cb) {
+  const b = el('button', { type: 'button', class: 'sw', role: 'switch', 'aria-checked': String(!!on) });
+  b.onclick = () => { const v = b.getAttribute('aria-checked') !== 'true'; b.setAttribute('aria-checked', String(v)); cb(v); };
+  return b;
+}
+function slider(label, min, max, step, val, fmt, cb) {
+  const out = el('span', { class: 'val' }, fmt(val));
+  const inp = el('input', { type: 'range', min, max, step, value: val, 'aria-label': label });
+  inp.addEventListener('input', () => { const v = +inp.value; out.textContent = fmt(v); cb(v); });
+  return el('div', { class: 'row col' }, el('div', { class: 'top' }, el('span', {}, label), out), inp);
+}
+
+/* ---------- settings ---------- */
+const DEFAULTS = { theme: 'system', accent: '#0a84ff', name: '', presets: [],
+  ring: { on: true, style: 'rainbow', color: null, anim: true, w: 3, dy: 0, sc: 1 } };
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+const settings = (() => { let s = {}; try { s = JSON.parse(store.get('soiree.settings') || '{}'); } catch (e) {}
+  return { ...DEFAULTS, ...s, ring: { ...DEFAULTS.ring, ...(s.ring || {}) } }; })();
+const saveSettings = () => store.set('soiree.settings', JSON.stringify(settings));
+const mqDark = matchMedia('(prefers-color-scheme: dark)');
+function lumOf(hex) {
+  const n = parseInt(String(hex).replace('#', ''), 16), f = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); };
+  return .2126 * f((n >> 16) & 255) + .7152 * f((n >> 8) & 255) + .0722 * f(n & 255);
+}
+function applyTheme() {
+  const dark = settings.theme === 'dark' || (settings.theme === 'system' && mqDark.matches);
+  const r = document.documentElement;
+  r.dataset.theme = dark ? 'dark' : 'light';
+  r.style.setProperty('--accent', settings.accent);
+  r.style.setProperty('--on-accent', lumOf(settings.accent) > .5 ? '#000' : '#fff');
+  const m = $('meta[name=theme-color]'); if (m) m.content = dark ? '#000000' : '#f2f2f7';
+}
+mqDark.addEventListener('change', applyTheme);
+
+/* ---------- device ---------- */
+const UA = navigator.userAgent;
+const QS = new URLSearchParams(location.search);
+const SIM = QS.get('sim');                     // ?sim=393x852 simulates a Dynamic Island screen on any device
+const PREVIEW = QS.has('preview') || !!SIM;    // ?preview skips the iOS install gate (for testing)
+const IPAD = /iPad/.test(UA) || (/Macintosh/.test(UA) && navigator.maxTouchPoints > 1);
+const IPHONE = /iPhone|iPod/.test(UA);
+const IOS = IPAD || IPHONE;
+const STANDALONE = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+const DEVICE = IPAD ? 'iPad' : IPHONE ? 'iPhone' : (/Android/.test(UA) ? 'Android' : 'Desktop browser');
+if (IOS && STANDALONE) document.documentElement.classList.add('ios-app');
+let deferredPrompt = null;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; if (!location.hash || location.hash === '#/') render(); });
+
+/* Dynamic Island: no API exposes it, so match the screen size (CSS points, portrait) against known models. Values are approximate. */
+const ISLANDS = {
+  '393x852': { w: 126, h: 37, t: 11, name: 'iPhone 14 Pro, 15, 15 Pro or 16' },
+  '430x932': { w: 126, h: 37, t: 11, name: 'iPhone 14 Pro Max, 15 Plus, 15 Pro Max or 16 Plus' },
+  '402x874': { w: 125, h: 37, t: 14, name: 'iPhone 16 Pro or 17' },
+  '440x956': { w: 125, h: 37, t: 14, name: 'iPhone 16 Pro Max or 17 Pro Max' },
+  '420x912': { w: 125, h: 37, t: 14, name: 'iPhone Air' }
+};
+const screenKey = () => SIM || Math.min(screen.width, screen.height) + 'x' + Math.max(screen.width, screen.height);
+const islandModel = () => ((IPHONE || SIM) ? ISLANDS[screenKey()] : null);
+
+/* ---------- storage (IndexedDB, with in-memory fallback) ---------- */
+function makeIDB() {
+  let dbp;
+  const open = () => dbp || (dbp = new Promise((res, rej) => {
+    const r = indexedDB.open('soiree', 1);
+    r.onupgradeneeded = () => { const d = r.result; d.createObjectStore('events', { keyPath: 'id' }); d.createObjectStore('received', { keyPath: 'id' }); d.createObjectStore('replies', { keyPath: 'key' }); };
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  }));
+  const tx = async (s, mode, fn) => { const d = await open(); return new Promise((res, rej) => { const t = d.transaction(s, mode); const rq = fn(t.objectStore(s)); t.oncomplete = () => res(rq && rq.result); t.onerror = () => rej(t.error); }); };
+  return { all: s => tx(s, 'readonly', o => o.getAll()), get: (s, k) => tx(s, 'readonly', o => o.get(k)), put: (s, v) => tx(s, 'readwrite', o => o.put(v)), del: (s, k) => tx(s, 'readwrite', o => o.delete(k)), clear: s => tx(s, 'readwrite', o => o.clear()), probe: open };
+}
+function makeMem() {
+  const m = { events: new Map(), received: new Map(), replies: new Map() }, kp = { events: 'id', received: 'id', replies: 'key' };
+  return { all: async s => [...m[s].values()], get: async (s, k) => m[s].get(k), put: async (s, v) => { m[s].set(v[kp[s]], v); }, del: async (s, k) => { m[s].delete(k); }, clear: async s => m[s].clear(), probe: async () => {}, mem: true };
+}
+let DB = makeIDB();
+async function initDB() { try { await DB.probe(); } catch (e) { console.warn('IndexedDB unavailable, using memory', e); DB = makeMem(); } }
+
+/* ---------- invite model ---------- */
+const PRESETS = [
+  { n: 'Sunset', c: ['#ff9a5a', '#ff5e7e', '#7b5cff'] }, { n: 'Lagoon', c: ['#2dd4bf', '#3b82f6', '#1e1b4b'] },
+  { n: 'Orchid', c: ['#f0abfc', '#a78bfa', '#312e81'] }, { n: 'Citrus', c: ['#fde047', '#fb923c', '#f43f5e'] },
+  { n: 'Meadow', c: ['#bef264', '#34d399', '#0f766e'] }, { n: 'Cotton', c: ['#fbcfe8', '#bae6fd', '#e9d5ff'] },
+  { n: 'Midnight', c: ['#0f172a', '#4338ca', '#be185d'] }, { n: 'Peach', c: ['#fed7aa', '#fda4af', '#fcd34d'] },
+  { n: 'Glacier', c: ['#e0f2fe', '#7dd3fc', '#6366f1'] }, { n: 'Cherry', c: ['#fb7185', '#be123c', '#4c0519'] },
+  { n: 'Slate', c: ['#e2e8f0', '#94a3b8', '#334155'] }, { n: 'Aurora', c: ['#22d3ee', '#a3e635', '#c084fc'] }
+];
+const FONTS = {
+  system: { n: 'Classic', ff: '-apple-system,"SF Pro Display",system-ui,sans-serif', fw: 800, ls: '-.035em', tt: 'none' },
+  rounded: { n: 'Rounded', ff: 'ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif', fw: 800, ls: '-.02em', tt: 'none' },
+  serif: { n: 'Serif', ff: 'ui-serif,"New York",Georgia,"Times New Roman",serif', fw: 700, ls: '-.02em', tt: 'none' },
+  mono: { n: 'Mono', ff: 'ui-monospace,"SF Mono",Menlo,monospace', fw: 700, ls: '-.05em', tt: 'none' },
+  poster: { n: 'Poster', ff: '-apple-system,"SF Pro Display","Helvetica Neue",system-ui,sans-serif', fw: 900, ls: '-.05em', tt: 'uppercase' }
+};
+const EMOJI = ['🎈', '🎉', '🎊', '🥳', '🎂', '🍰', '🍾', '🥂', '🍕', '🌮', '🍹', '🪩', '🎶', '🎤', '🕺', '💃', '🌴', '🔥', '✨', '💖', '🌈', '⭐', '🎁', '🦄'];
+const toLocal = d => { const p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
+function newEvent() {
+  const d = new Date(); d.setDate(d.getDate() + (((6 - d.getDay() + 7) % 7) || 7)); d.setHours(19, 0, 0, 0);
+  return { id: uid(), title: '', host: settings.name || '', reply: '', start: toLocal(d), end: '', loc: '', desc: '',
+    theme: { k: 'mesh', c: [...PRESETS[0].c], a: 150, photo: '', url: '', avg: 0, b: 0, n: 0, f: 'system', tx: 'auto', fx: 'none', o: 32, lo: 'center' },
+    stickers: [], created: Date.now(), shared: 0 };
+}
+function whenParts(ev) {
+  if (!ev.start) return ['', ''];
+  const d = new Date(ev.start), tf = { hour: 'numeric', minute: '2-digit' };
+  let time = d.toLocaleTimeString(undefined, tf);
+  if (ev.end) time += ' – ' + new Date(ev.end).toLocaleTimeString(undefined, tf);
+  return [d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }), time];
+}
+function until(s) {
+  const ms = new Date(s) - Date.now(); if (!s || isNaN(ms)) return '';
+  if (ms < 0) return ms > -6 * 3600e3 ? 'Happening now' : 'This event has passed';
+  const m = Math.floor(ms / 6e4), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60);
+  if (d >= 1) return `In ${d} day${d > 1 ? 's' : ''}${d < 4 && h ? `, ${h} hr` : ''}`;
+  if (h >= 1) return `In ${h} hr ${m % 60} min`;
+  return `In ${m} min`;
+}
+
+/* ---------- link packing: JSON + raw photo bytes, deflated, base64url ---------- */
+const b64e = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 8192) s += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+const b64d = s => { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
+const pipe = async (bytes, tr) => new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(tr)).arrayBuffer());
+const HAS_CS = typeof CompressionStream !== 'undefined' && typeof DecompressionStream !== 'undefined';
+async function packBin(obj, img = new Uint8Array(0)) {
+  const jb = new TextEncoder().encode(JSON.stringify(obj)), all = new Uint8Array(4 + jb.length + img.length);
+  new DataView(all.buffer).setUint32(0, jb.length); all.set(jb, 4); all.set(img, 4 + jb.length);
+  return HAS_CS ? 'z' + b64e(await pipe(all, new CompressionStream('deflate-raw'))) : 'p' + b64e(all);
+}
+async function unpackBin(s) {
+  let all = b64d(s.slice(1));
+  if (s[0] === 'z') all = await pipe(all, new DecompressionStream('deflate-raw'));
+  const n = new DataView(all.buffer, all.byteOffset).getUint32(0);
+  return { obj: JSON.parse(new TextDecoder().decode(all.subarray(4, 4 + n))), img: all.subarray(4 + n) };
+}
+const D_WIRE = { x: 'auto', y: 'none', f: 'system', z: 'center', o: 32, a: 150, b: 0, n: 0, av: 0 };
+function toWire(ev, hasImg) {
+  const t = ev.theme;
+  const w = { v: 1, i: ev.id, t: ev.title, h: ev.host, r: ev.reply, s: ev.start, e: ev.end, l: ev.loc, d: ev.desc, k: t.k, c: t.c.map(x => x.slice(1)), a: t.a, u: t.url, av: t.avg, b: t.b, n: t.n, f: t.f, x: t.tx, y: t.fx, o: t.o, z: t.lo,
+    st: ev.stickers.map(s => [s.e, Math.round(s.x * 10) / 10, Math.round(s.y * 10) / 10, Math.round(s.s), Math.round(s.r)]) };
+  for (const k of Object.keys(w)) if (w[k] === '' || w[k] == null || (k in D_WIRE && w[k] === D_WIRE[k]) || (k === 'st' && !w[k].length)) delete w[k];
+  if (hasImg) w.pm = t.photo.startsWith('data:image/webp') ? 'w' : 'j';
+  return w;
+}
+function fromWire(w, img) {
+  const t = { k: w.k || 'mesh', c: (w.c || []).map(x => '#' + x), a: w.a ?? 150, photo: '', url: w.u || '', avg: w.av || 0, b: w.b || 0, n: w.n || 0, f: w.f || 'system', tx: w.x || 'auto', fx: w.y || 'none', o: w.o ?? 32, lo: w.z || 'center' };
+  while (t.c.length < 3) t.c.push('#888888');
+  if (img && img.length) t.photo = `data:${w.pm === 'w' ? 'image/webp' : 'image/jpeg'};base64,` + btoa(Array.from(img, c => String.fromCharCode(c)).join(''));
+  return { id: w.i, title: w.t || '', host: w.h || '', reply: w.r || '', start: w.s || '', end: w.e || '', loc: w.l || '', desc: w.d || '', theme: t,
+    stickers: (w.st || []).map(a => ({ e: a[0], x: a[1], y: a[2], s: a[3], r: a[4] })), created: Date.now(), shared: 0 };
+}
+const photoBytes = url => { const b = atob(url.slice(url.indexOf(',') + 1)), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
+const baseUrl = () => location.origin + location.pathname;
+async function buildLink(ev) {
+  const img = ev.theme.photo ? photoBytes(ev.theme.photo) : undefined;
+  return baseUrl() + '#/i=' + await packBin(toWire(ev, !!img), img);
+}
+
+/* ---------- photo squeeze: shrink until it fits the link budget ---------- */
+const WEBP = (() => { try { return document.createElement('canvas').toDataURL('image/webp').startsWith('data:image/webp'); } catch (e) { return false; } })();
+async function compressImage(file, budget = PHOTO_BUDGET) {
+  const bmp = await createImageBitmap(file), mime = WEBP ? 'image/webp' : 'image/jpeg';
+  let best = null;
+  const finish = (r) => {
+    let avg = 0x555555;
+    try { const c = document.createElement('canvas'); c.width = c.height = 1; const x = c.getContext('2d'); x.drawImage(bmp, 0, 0, 1, 1); const d = x.getImageData(0, 0, 1, 1).data; avg = (d[0] << 16) | (d[1] << 8) | d[2]; } catch (e) {}
+    return { ...r, avg, from: file.size, tooBig: r.bytes > budget };
+  };
+  for (const D of [420, 340, 280, 220, 180, 140, 110, 84, 64, 48]) {
+    const sc = Math.min(1, D / Math.max(bmp.width, bmp.height)), w = Math.max(8, Math.round(bmp.width * sc)), h = Math.max(8, Math.round(bmp.height * sc));
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(bmp, 0, 0, w, h);
+    for (const q of [.7, .55, .42, .32, .22]) {
+      const u = c.toDataURL(mime, q), bytes = Math.floor((u.length - u.indexOf(',') - 1) * 3 / 4);
+      if (!best || bytes < best.bytes) best = { url: u, bytes, w, h };
+      if (bytes <= budget) return finish({ url: u, bytes, w, h });
+    }
+  }
+  return finish(best);
+}
+
+/* ---------- poster rendering ---------- */
+const meshCss = c => `radial-gradient(at 20% 15%,${c[0]} 0,transparent 55%),radial-gradient(at 85% 25%,${c[1]} 0,transparent 50%),radial-gradient(at 30% 92%,${c[2]} 0,transparent 55%),radial-gradient(at 92% 96%,${c[0]} 0,transparent 50%),${c[1]}`;
+const linCss = (c, a) => `linear-gradient(${a}deg,${c[0]},${c[1]} 55%,${c[2]})`;
+function inkFor(t) {
+  if (t.tx === 'light' || t.tx === 'dark') return t.tx;
+  let L = (t.k === 'photo' && (t.photo || t.url)) ? lumOf('#' + (t.avg || 0x555555).toString(16).padStart(6, '0')) : lumOf(t.c[0]) * .4 + lumOf(t.c[1]) * .35 + lumOf(t.c[2]) * .25;
+  L = t.n >= 0 ? L * (1 - t.n / 100) : L + (1 - L) * (-t.n / 100);
+  return L > .36 ? 'dark' : 'light';
+}
+function makeFx(canvas) {
+  const ctx = canvas.getContext('2d'), W = canvas.width = 720, H = canvas.height = 960, still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let raf = 0, kind = 'none', parts = [], cols = ['#fff'];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  function spawn(initial) {
+    if (kind === 'confetti') return { x: rnd(0, W), y: initial ? rnd(-H, H) : rnd(-80, -10), w: rnd(10, 20), h: rnd(16, 30), a: rnd(0, 6.28), va: rnd(-.08, .08), vy: rnd(2.2, 4.6), sw: rnd(0, 6.28), c: cols[Math.floor(rnd(0, cols.length))] };
+    return { x: rnd(0, W), y: initial ? rnd(-H, H) : rnd(-20, -5), r: rnd(3, 9), vy: rnd(.9, 2.4), sw: rnd(0, 6.28) };
+  }
+  function frame() {
+    if (!canvas.isConnected) { raf = 0; return; }
+    ctx.clearRect(0, 0, W, H);
+    for (const p of parts) {
+      p.y += p.vy; p.sw += .03; p.x += Math.sin(p.sw) * (kind === 'snow' ? .8 : 1.2);
+      if (kind === 'confetti') { p.a += p.va; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a); ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h * Math.abs(Math.cos(p.sw))); ctx.restore(); }
+      else { ctx.beginPath(); ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.arc(p.x, p.y, p.r, 0, 6.28); ctx.fill(); }
+      if (p.y > H + 40) Object.assign(p, spawn(false));
+    }
+    if (!still) raf = requestAnimationFrame(frame); else raf = 0;
+  }
+  return { set(k, c) {
+    cols = [...c, '#ffffff', '#ffd60a'];
+    if (k === kind) return;
+    kind = k; cancelAnimationFrame(raf); raf = 0; ctx.clearRect(0, 0, W, H); parts = [];
+    if (k === 'confetti' || k === 'snow') { for (let i = 0; i < (k === 'snow' ? 70 : 55); i++) parts.push(spawn(true)); raf = requestAnimationFrame(frame); }
+  } };
+}
+function buildPoster() {
+  const canvas = el('canvas', { class: 'p-fx', width: 720, height: 960 });
+  const P = { bg: el('div', { class: 'p-bg' }), sharp: el('img', { class: 'p-sharp', alt: '', decoding: 'async' }), tint: el('div', { class: 'p-tint' }), shim: el('div', { class: 'p-shim' }), canvas,
+    title: el('h2', { class: 'p-title' }), when: el('p', { class: 'p-when' }), host: el('p', { class: 'p-host' }), loc: el('p', { class: 'p-loc' }), desc: el('p', { class: 'p-desc' }), stk: el('div', { class: 'p-stk' }), fx: null };
+  P.content = el('div', { class: 'p-content' }, P.title, P.when, P.loc, P.host, P.desc);
+  P.poster = el('div', { class: 'poster' }, P.bg, P.sharp, P.tint, P.shim, canvas, P.content, P.stk);
+  P.wrap = el('div', { class: 'pw' }, P.poster);
+  P.sharp.addEventListener('load', () => P.sharp.classList.add('on'));
+  P.sharp.addEventListener('error', () => { P.sharp.classList.remove('on'); P.sharp.removeAttribute('src'); P.sharp.dataset.src = ''; });
+  return P;
+}
+function paint(P, ev, o = {}) {
+  const t = ev.theme, p = P.poster, f = FONTS[t.f] || FONTS.system;
+  p.className = 'poster lo-' + t.lo + (o.mini ? ' mini' : '') + (t.fx === 'shimmer' && !o.mini ? ' shim' : '');
+  p.style.setProperty('--c', (t.o / 3.6).toFixed(2));
+  p.style.setProperty('--ff', f.ff); p.style.setProperty('--fw', f.fw); p.style.setProperty('--ls', f.ls); p.style.setProperty('--tt', f.tt);
+  p.dataset.ink = inkFor(t);
+  const photo = t.k === 'photo' && t.photo;
+  if (photo) { P.bg.style.background = ''; P.bg.style.backgroundImage = `url("${t.photo}")`; } else P.bg.style.background = t.k === 'linear' ? linCss(t.c, t.a) : meshCss(t.c);
+  const bs = 1 + t.b / 90; p.style.setProperty('--bs', t.b ? bs.toFixed(3) : 1);
+  P.bg.style.filter = P.sharp.style.filter = t.b ? `blur(calc(${t.b} * .2778cqw))` : '';
+  const url = t.k === 'photo' ? t.url : '';
+  if ((P.sharp.dataset.src || '') !== url) { P.sharp.classList.remove('on'); P.sharp.dataset.src = url; if (url) P.sharp.src = url; else P.sharp.removeAttribute('src'); }
+  P.tint.style.background = t.n >= 0 ? `rgba(0,0,0,${t.n / 100})` : `rgba(255,255,255,${-t.n / 100})`;
+  const [date, time] = whenParts(ev);
+  P.title.textContent = ev.title || (o.mini ? 'Untitled' : 'Event title');
+  P.title.classList.toggle('ph', !ev.title);
+  P.when.textContent = date ? date + (time ? '\n' + time : '') : '';
+  P.loc.textContent = ev.loc || ''; P.host.textContent = ev.host ? 'Hosted by ' + ev.host : ''; P.desc.textContent = ev.desc || '';
+  P.stk.replaceChildren(...ev.stickers.map((s, i) => el('span', { class: 'stk' + (o.sel === i ? ' sel' : ''), 'data-i': i, style: `left:${s.x}%;top:${s.y}%;--s:${s.s};--r:${s.r}deg` }, s.e)));
+  if (o.live) { P.fx = P.fx || makeFx(P.canvas); P.fx.set(t.fx, t.c); }
+}
+const mkPoster = (ev, o) => { const P = buildPoster(); paint(P, ev, o); return P; };
+
+/* ---------- Dynamic Island ring ---------- */
+const RING_STOPS = { rainbow: '#ff3b30,#ff9500,#ffcc00,#34c759,#5ac8fa,#007aff,#af52de,#ff2d55,#ff3b30', aurora: '#64d2ff,#bf5af2,#ff6482,#ffd60a,#64d2ff' };
+function ringGradient(r) {
+  const c = r.color || settings.accent;
+  return r.style === 'color' ? `conic-gradient(from var(--ang),${c},${c})` : `conic-gradient(from var(--ang),${RING_STOPS[r.style] || RING_STOPS.rainbow})`;
+}
+function ringNode(r, w, h, rw) {
+  const cls = r.anim ? (r.style === 'color' ? 'pulse' : 'spin') : '';
+  return el('div', { class: 'island', style: `width:${w + 2 * rw - 2}px;height:${h + 2 * rw - 2}px;margin-left:${-(w + 2 * rw - 2) / 2}px` },
+    el('div', { class: 'ring ' + cls, style: `--rw:${rw}px;background:${ringGradient(r)}` }));
+}
+function applyRing() {
+  $('#island-real')?.remove();
+  const m = islandModel(), r = settings.ring;
+  if (!m || !r.on || !(STANDALONE || SIM) || !matchMedia('(orientation: portrait)').matches) return;
+  const w = m.w * r.sc, h = m.h * r.sc, n = ringNode(r, w, h, r.w);
+  n.id = 'island-real'; n.style.top = (m.t + r.dy - r.w + 1 - (h - m.h) / 2) + 'px';
+  document.body.append(n);
+}
+matchMedia('(orientation: portrait)').addEventListener('change', applyRing);
+
+/* ---------- calendar + sharing ---------- */
+function icsFor(ev) {
+  const dt = s => s.replace(/[-:]/g, '') + '00', esc = t => (t || '').replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+  const end = ev.end || toLocal(new Date(new Date(ev.start).getTime() + 2 * 3600e3));
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Soiree//EN', 'CALSCALE:GREGORIAN', 'BEGIN:VEVENT', `UID:${ev.id}@soiree`,
+    'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z', 'DTSTART:' + dt(ev.start), 'DTEND:' + dt(end),
+    'SUMMARY:' + esc(ev.title || 'Event'), 'LOCATION:' + esc(ev.loc), 'DESCRIPTION:' + esc((ev.desc || '') + (ev.host ? `\nHosted by ${ev.host}` : '')),
+    'BEGIN:VALARM', 'TRIGGER:-P1D', 'ACTION:DISPLAY', 'DESCRIPTION:Tomorrow', 'END:VALARM', 'BEGIN:VALARM', 'TRIGGER:-PT1H', 'ACTION:DISPLAY', 'DESCRIPTION:Starting soon', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+}
+async function saveBlob(name, text, type) {
+  const file = new File([text], name, { type });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file] }); return; } catch (e) { if (e.name === 'AbortError') return; } }
+  const a = el('a', { href: URL.createObjectURL(file), download: name }); document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+const addToCalendar = ev => { if (!ev.start) return toast('Add a date first'); saveBlob((ev.title || 'event').replace(/[^\w-]+/g, '-') + '.ics', icsFor(ev), 'text/calendar'); };
+async function shareLink(ev) {
+  const link = await buildLink(ev);
+  if (navigator.share) { try { await navigator.share({ title: ev.title || 'Invite', text: `You’re invited to ${ev.title || 'my event'}`, url: link }); return true; } catch (e) { if (e.name === 'AbortError') return false; } }
+  await copyText(link); toast('Link copied'); return true;
+}
+
+/* ---------- routing ---------- */
+const app = $('#app');
+let cleanups = [], suppress = false, VT = false;
+const onLeave = fn => cleanups.push(fn);
+function go(hash, from) {
+  if (location.hash === hash) return;
+  const run = async () => { suppress = true; location.hash = hash; await render(); };
+  if (from && document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    from.style.viewTransitionName = 'poster'; VT = true;
+    document.startViewTransition(run).finished.finally(() => { VT = false; });
+  } else run();
+}
+addEventListener('hashchange', () => { if (suppress) { suppress = false; return; } render(); });
+const needsGate = h => {
+  if (!(IOS && !STANDALONE) || PREVIEW) return false;
+  return GATE_GUESTS || !(h.startsWith('#/i=') || h.startsWith('#/r='));
+};
+async function render() {
+  cleanups.forEach(f => { try { f(); } catch (e) {} }); cleanups = [];
+  const h = location.hash || '#/';
+  let view;
+  try {
+    if (needsGate(h)) view = Gate();
+    else if (h.startsWith('#/i=')) view = await GuestView(h.slice(4));
+    else if (h.startsWith('#/r=')) view = await ReplyView(h.slice(4));
+    else if (h === '#/new') view = await Editor(null);
+    else if (h.startsWith('#/edit/')) view = await Editor(h.slice(7));
+    else if (h.startsWith('#/e/')) view = await HostView(h.slice(4));
+    else view = await Home();
+  } catch (err) { console.error(err); view = Message('This invite link looks incomplete', 'Ask the host to send it again, or open it in a different app.'); }
+  if (!VT) view.classList.add('enter');
+  app.replaceChildren(view); window.scrollTo(0, 0);
+  if (view._mount) view._mount();
+}
+
+/* ---------- shared view pieces ---------- */
+function bar({ left, title, right, solid } = {}) {
+  const b = el('div', { class: 'bar' + (solid ? ' solid' : '') }, el('div', { class: 'side' }, left), el('div', { class: 'ttl' }, title || ''), el('div', { class: 'side' }, right));
+  return b;
+}
+function collapseOnScroll(bar, sentinel) {
+  const io = new IntersectionObserver(([e]) => bar.classList.toggle('scrolled', !e.isIntersecting), { rootMargin: `-${(parseFloat(getComputedStyle(bar).minHeight) || 56)}px 0px 0px 0px` });
+  io.observe(sentinel); onLeave(() => io.disconnect());
+}
+const backBtn = (to = '#/') => el('button', { class: 'rb', 'aria-label': 'Back', onclick: () => go(to) }, ico('back'));
+const gearBtn = () => el('button', { class: 'rb', 'aria-label': 'Settings', onclick: openSettings }, ico('sliders'));
+function Message(title, text) {
+  return el('div', { class: 'view' }, bar({ left: backBtn() }), el('div', { class: 'empty' }, el('div', { class: 'app-icon lg sq', html: SPARK }), el('h2', { class: 'large' }, title), el('p', {}, text), el('button', { class: 'btn', onclick: () => go('#/') }, 'Go to my invites')));
+}
+function detailRows(ev) {
+  const [date, time] = whenParts(ev), rows = [];
+  if (date) rows.push(el('div', { class: 'detail-row' }, el('div', { class: 'ci' }, ico('calendar', 19)), el('div', {}, el('b', {}, date), el('small', {}, time))));
+  if (ev.loc) rows.push(el('div', { class: 'detail-row' }, el('div', { class: 'ci' }, ico('pin', 19)), el('a', { href: 'https://maps.apple.com/?q=' + encodeURIComponent(ev.loc), target: '_blank', rel: 'noopener' }, el('b', {}, ev.loc), el('small', {}, 'Open in Maps'))));
+  if (ev.host) rows.push(el('div', { class: 'detail-row' }, el('div', { class: 'ci' }, ico('person', 19)), el('div', {}, el('b', {}, 'Hosted by ' + ev.host), ev.reply ? el('small', {}, 'Replies go to ' + ev.reply) : null)));
+  return rows.length ? el('div', { class: 'group' }, rows) : null;
+}
+function startCountdown(ev, node) {
+  const tick = () => { node.textContent = until(ev.start); node.parentElement.style.display = node.textContent ? '' : 'none'; };
+  tick(); const id = setInterval(tick, 30000); onLeave(() => clearInterval(id));
+}
+const PAL = ['#ff6b6b', '#ff9f43', '#feca57', '#1dd1a1', '#48dbfb', '#5f7cff', '#a55eea', '#ff6fb5'];
+const hue = s => PAL[[...s].reduce((a, c) => a + c.charCodeAt(0), 0) % PAL.length];
+
+/* ---------- gate ---------- */
+function Gate() {
+  const step = (t, i) => el('li', {}, el('span', {}, t), ico(i));
+  return el('div', { class: 'view gate' }, el('div', { class: 'gate-card' },
+    el('div', { class: 'app-icon lg sq', html: SPARK }),
+    el('h1', {}, 'Add Soirée to your Home Screen'),
+    el('p', { class: 'lead' }, `On ${IPAD ? 'iPad' : 'iPhone'}, Soirée works as an app. Your invites stay saved on this device and open full screen.`),
+    el('ol', { class: 'steps' }, step('Tap the Share button in Safari', 'share'), step('Choose Add to Home Screen', 'plus'), step('Open Soirée from your Home Screen', 'sparkle')),
+    el('p', { class: 'fine' }, 'You only need this to create invites. Opening someone’s invite link works without it.')));
+}
+
+/* ---------- home ---------- */
+async function Home() {
+  const [mine, recv] = await Promise.all([DB.all('events'), DB.all('received')]);
+  let tab = store.get('soiree.tab') || 'created';
+  const grid = el('div', { class: 'grid' });
+  const bnr = (() => {
+    if (!deferredPrompt || STANDALONE || store.get('soiree.noinstall')) return null;
+    return el('div', { class: 'banner sq' }, el('div', { class: 'app-icon sm sq', html: SPARK }), el('div', { class: 'bt' }, el('b', {}, 'Install Soirée'), 'Open it like an app and keep invites offline.'),
+      el('button', { class: 'btn sm', onclick: async () => { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; render(); } }, 'Install'),
+      el('button', { class: 'rb sm', 'aria-label': 'Dismiss', onclick: () => { store.set('soiree.noinstall', '1'); render(); } }, ico('x', 16)));
+  })();
+  const sentinel = el('h1', { class: 'large' }, 'Invites');
+  const b = bar({ title: 'Invites', right: [gearBtn(), el('button', { class: 'rb accent', 'aria-label': 'New invite', onclick: () => go('#/new') }, ico('plus'))] });
+  function draw() {
+    const list = (tab === 'created' ? mine : recv).slice().sort((a, z) => (tab === 'created' ? z.created - a.created : z.savedAt - a.savedAt));
+    if (!list.length) {
+      grid.replaceChildren(el('div', { class: 'empty', style: 'grid-column:1/-1' }, el('div', { class: 'app-icon lg sq', html: SPARK }),
+        el('h2', { style: 'font-size:22px;font-weight:700' }, tab === 'created' ? 'No invites yet' : 'Nothing received yet'),
+        el('p', {}, tab === 'created' ? 'Design one, then share it as a link. No account needed.' : 'Invites people send you show up here once you open their link.'),
+        tab === 'created' ? el('button', { class: 'btn', onclick: () => go('#/new') }, 'Create invite') : null));
+      return;
+    }
+    grid.replaceChildren(...list.map(item => {
+      const ev = tab === 'created' ? item : item.ev, P = mkPoster(ev, { mini: true });
+      const my = item.my ? { g: 'Going', m: 'Maybe', n: 'Can’t go' }[item.my.status] : '';
+      const card = el('button', { class: 'card', onclick: () => go(tab === 'created' ? '#/e/' + ev.id : '#/i=' + item.payload, P.wrap) }, P.wrap,
+        el('div', { class: 'cap' }, el('b', {}, ev.title || 'Untitled'), my ? my + ' · ' + until(ev.start) : until(ev.start) || 'No date'));
+      return card;
+    }));
+  }
+  draw();
+  const view = el('div', { class: 'view' }, b, el('div', { class: 'wrap' }, sentinel, bnr,
+    seg([['created', 'Created'], ['received', 'Received']], tab, v => { tab = v; store.set('soiree.tab', v); draw(); }, 'big'), grid));
+  view._mount = () => collapseOnScroll(b, sentinel);
+  return view;
+}
+
+/* ---------- editor ---------- */
+async function Editor(id) {
+  let ev, orig = null;
+  if (id) { orig = await DB.get('events', id); if (!orig) return Message('Invite not found', 'It may have been deleted from this device.'); ev = structuredClone(orig); } else ev = newEvent();
+  const t = ev.theme;
+  let tab = 'details', sel = -1, dirty = false, linkTimer = 0, meter = null;
+  const P = buildPoster(); P.wrap.classList.add('edit');
+  const desktop = () => matchMedia('(min-width:900px)').matches;
+  const probe = el('div', { style: 'position:fixed;visibility:hidden;padding-top:env(safe-area-inset-top,0px)' });
+  const safeTop = () => parseFloat(getComputedStyle(probe).paddingTop) || 0;
+  const fitEl = el('div', { class: 'fit' }, P.wrap), stage = el('div', { class: 'stage' }, fitEl, probe);
+  const body = el('div', { class: 'sheet-body' });
+  const paintNow = () => paint(P, ev, { edit: true, live: true, sel });
+  const change = () => { dirty = true; paintNow(); clearTimeout(linkTimer); linkTimer = setTimeout(updateMeter, 350); };
+
+  /* sheet + fitting */
+  let H = 0, vis = 0;
+  const detents = () => { H = Math.min(Math.round(innerHeight * .88), 760); return [150, Math.min(H, Math.round(innerHeight * .5)), H]; };
+  function fit() {
+    const sr = stage.getBoundingClientRect(), top = desktop() ? 56 + safeTop() : safeTop() + 60, v = desktop() ? 0 : vis;
+    const w0 = Math.min(desktop() ? 400 : 340, sr.width - 48), availH = sr.height - top - v - 14, ph = w0 * 4 / 3;
+    const s = clamp(availH / ph, .25, 1);
+    fitEl.style.setProperty('--w0', w0 + 'px'); fitEl.style.setProperty('--s', s.toFixed(4)); fitEl.style.setProperty('--ty', (top + Math.max(0, (availH - ph * s) / 2)) + 'px');
+  }
+  function setSheet(v, animate = true) {
+    if (desktop()) { fit(); return; }
+    detents(); vis = clamp(v, 150, H);
+    sheet.style.transition = animate ? '' : 'none'; sheet.style.setProperty('--sh', H + 'px'); sheet.style.setProperty('--sy', (H - vis) + 'px'); sheet.style.setProperty('--hid', (H - vis) + 'px'); fit();
+  }
+  const tabs = seg([['details', 'Details'], ['look', 'Look'], ['stickers', 'Stickers'], ['share', 'Share']], tab, v => { tab = v; renderTab(); if (!desktop() && vis < 300) setSheet(detents()[1]); });
+  const head = el('div', { class: 'sheet-head' }, el('div', { class: 'grab' }), tabs);
+  const sheet = el('div', { class: 'sheet' }, head, body);
+  let drag = null;
+  head.addEventListener('pointerdown', e => { if (!desktop()) drag = { y0: e.clientY, v0: vis, last: e.clientY, lt: performance.now(), vel: 0, moved: false }; });
+  const mv = e => {
+    if (!drag) return; const dy = e.clientY - drag.y0;
+    if (!drag.moved && Math.abs(dy) > 6) { drag.moved = true; try { head.setPointerCapture(e.pointerId); } catch (x) {} }
+    if (!drag.moved) return; const now = performance.now(); drag.vel = (e.clientY - drag.last) / (now - drag.lt || 1); drag.last = e.clientY; drag.lt = now;
+    setSheet(drag.v0 - dy, false);
+  };
+  const up = () => {
+    if (!drag) return; const d = drag; drag = null; if (!d.moved) return;
+    head._swallow = true; setTimeout(() => head._swallow = false, 0);
+    const proj = vis - d.vel * 180; setSheet(detents().reduce((a, c) => Math.abs(c - proj) < Math.abs(a - proj) ? c : a));
+  };
+  head.addEventListener('click', e => { if (head._swallow) { e.stopPropagation(); e.preventDefault(); } }, true);
+  addEventListener('pointermove', mv); addEventListener('pointerup', up); addEventListener('pointercancel', up);
+  const onResize = () => setSheet(vis || detents()[1], false); addEventListener('resize', onResize);
+  onLeave(() => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); removeEventListener('pointercancel', up); removeEventListener('resize', onResize); clearTimeout(linkTimer); });
+
+  /* stickers: drag on the poster */
+  P.stk.addEventListener('pointerdown', e => {
+    const s = e.target.closest('.stk'); if (!s) return; e.preventDefault();
+    sel = +s.dataset.i; const st = ev.stickers[sel], r = P.poster.getBoundingClientRect(), sx = e.clientX, sy = e.clientY, x0 = st.x, y0 = st.y;
+    P.stk.querySelectorAll('.stk').forEach(n => n.classList.toggle('sel', n === s)); if (tab === 'stickers') renderTab();
+    try { s.setPointerCapture(e.pointerId); } catch (x) {}
+    const m = e2 => { st.x = clamp(x0 + (e2.clientX - sx) / r.width * 100, 0, 100); st.y = clamp(y0 + (e2.clientY - sy) / r.height * 100, 0, 100); s.style.left = st.x + '%'; s.style.top = st.y + '%'; dirty = true; };
+    const u = () => { s.removeEventListener('pointermove', m); s.removeEventListener('pointerup', u); s.removeEventListener('pointercancel', u); clearTimeout(linkTimer); linkTimer = setTimeout(updateMeter, 350); };
+    s.addEventListener('pointermove', m); s.addEventListener('pointerup', u); s.addEventListener('pointercancel', u);
+  });
+  P.poster.addEventListener('pointerdown', e => { if (!e.target.closest('.stk') && sel !== -1) { sel = -1; paintNow(); if (tab === 'stickers') renderTab(); } });
+
+  /* tab panels */
+  const inputRow = (ph, key, type = 'text', extra = {}) => el('div', { class: 'row' }, el('input', { type, placeholder: ph, value: ev[key], 'aria-label': ph, ...extra, oninput: e => { ev[key] = e.target.value; change(); } }));
+  const dtRow = (label, key) => el('div', { class: 'row' }, el('label', {}, label), el('input', { type: 'datetime-local', value: ev[key], 'aria-label': label, oninput: e => { ev[key] = e.target.value; change(); } }));
+  const panels = {
+    details: () => el('div', {},
+      el('div', { class: 'h' }, 'Event'), el('div', { class: 'group' }, inputRow('Event title', 'title', 'text', { autocomplete: 'off', enterkeyhint: 'next' }), inputRow('Hosted by', 'host', 'text', { autocomplete: 'name' })),
+      el('div', { class: 'h' }, 'When and where'), el('div', { class: 'group' }, dtRow('Starts', 'start'), dtRow('Ends', 'end'), inputRow('Location', 'loc', 'text', { autocomplete: 'off' })),
+      el('div', { class: 'h' }, 'About'), el('div', { class: 'group' }, el('div', { class: 'row' }, el('textarea', { placeholder: 'Tell guests what to expect', 'aria-label': 'Description', value: ev.desc, oninput: e => { ev.desc = e.target.value; change(); } }))),
+      el('div', { class: 'h' }, 'Replies'), el('div', { class: 'group' }, inputRow('Phone or email for replies', 'reply', 'text', { inputmode: 'email', autocomplete: 'off', autocapitalize: 'off' })),
+      el('p', { class: 'note' }, 'When guests answer, their message goes here. You can leave it empty and they’ll pick an app from the share sheet instead.')),
+    look: () => {
+      const wrap = el('div', {}), photoMode = t.k === 'photo';
+      wrap.append(el('div', { class: 'h' }, 'Background'), seg([['mesh', 'Mesh'], ['linear', 'Gradient'], ['photo', 'Photo']], t.k, v => { t.k = v; change(); renderTab(); }, 'big'));
+      if (photoMode) {
+        const file = el('input', { type: 'file', accept: 'image/*', hidden: true, onchange: async e => {
+          const f = e.target.files[0]; if (!f) return;
+          try { toast('Shrinking photo…'); const r = await compressImage(f); t.photo = r.url; t.avg = r.avg; t.k = 'photo'; if (!t.b) t.b = 10; t.pinfo = { from: r.from, to: r.bytes, tooBig: r.tooBig }; change(); renderTab(); }
+          catch (err) { console.error(err); toast('Couldn’t read that photo'); }
+        } });
+        const info = t.photo && t.pinfo ? `Shrunk from ${(t.pinfo.from / 1024).toFixed(0)} KB to ${(t.pinfo.to / 1024).toFixed(1)} KB so it fits in the link.${t.pinfo.tooBig ? ' It’s still large; add a sharp image link below.' : ''}` : (t.photo ? 'Photo is saved inside the link.' : 'Pick a photo. It gets shrunk on your device to fit in the link.');
+        wrap.append(el('div', { class: 'h' }, 'Photo'), el('div', { class: 'group' },
+          el('div', { class: 'row' }, el('button', { class: 'linkbtn', style: 'padding:14px 0', onclick: () => file.click() }, t.photo ? 'Choose a different photo' : 'Choose photo'), file, t.photo ? el('button', { class: 'linkbtn', style: 'margin-left:auto;color:var(--red)', onclick: () => { t.photo = ''; t.pinfo = null; t.avg = 0; change(); renderTab(); } }, 'Remove') : null),
+          el('div', { class: 'row' }, el('input', { type: 'url', placeholder: 'Sharp image link (optional)', value: t.url, 'aria-label': 'Sharp image link', autocapitalize: 'off', oninput: e => { t.url = e.target.value.trim(); change(); } }))),
+          el('p', { class: 'note' }, info + ' With a sharp link, guests see the full photo fading in over the small one.'));
+      }
+      wrap.append(el('div', { class: 'h' }, photoMode ? 'Fallback colors' : 'Colors'),
+        el('div', { class: 'group' }, el('div', { class: 'swatches' }, PRESETS.map(p => el('button', { class: 'sw-p sq' + (p.c.every((c, i) => c === t.c[i]) ? ' on' : ''), style: `background:${meshCss(p.c)}`, 'aria-label': p.n, onclick: () => { t.c = [...p.c]; change(); renderTab(); } }))),
+          el('div', { class: 'row' }, el('div', { class: 'colors', style: 'padding:6px 0' }, t.c.map((c, i) => el('input', { type: 'color', value: c, 'aria-label': 'Color ' + (i + 1), oninput: e => { t.c[i] = e.target.value; change(); } })))),
+          t.k === 'linear' ? slider('Angle', 0, 360, 1, t.a, v => v + '°', v => { t.a = v; change(); }) : null));
+      wrap.append(el('div', { class: 'h' }, 'Finish'), el('div', { class: 'group' },
+        slider('Blur', 0, 40, 1, t.b, v => v, v => { t.b = v; change(); }),
+        slider('Tint', -40, 60, 1, t.n, v => (v > 0 ? '+' : '') + v, v => { t.n = v; change(); }),
+        slider('Corner roundness', 0, 56, 1, t.o, v => v, v => { t.o = v; change(); })));
+      wrap.append(el('div', { class: 'h' }, 'Font'), el('div', { class: 'group' }, el('div', { class: 'chips' }, Object.entries(FONTS).map(([k, f]) => el('button', { class: 'chip' + (t.f === k ? ' on' : ''), style: `font-family:${f.ff};font-weight:${Math.min(f.fw, 800)};text-transform:${f.tt}`, onclick: () => { t.f = k; change(); renderTab(); } }, f.n)))));
+      wrap.append(el('div', { class: 'h' }, 'Layout'), seg([['center', 'Center'], ['left', 'Top left'], ['bottom', 'Bottom']], t.lo, v => { t.lo = v; change(); }, 'big'),
+        el('div', { class: 'h' }, 'Text color'), seg([['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']], t.tx, v => { t.tx = v; change(); }, 'big'),
+        el('div', { class: 'h' }, 'Effect'), seg([['none', 'None'], ['confetti', 'Confetti'], ['snow', 'Snow'], ['shimmer', 'Shimmer']], t.fx, v => { t.fx = v; change(); }, 'big'));
+      const saved = settings.presets;
+      wrap.append(el('div', { class: 'h' }, 'My looks'), el('div', { class: 'group' }, el('div', { class: 'chips' },
+        saved.map((p, i) => el('span', { class: 'chip', style: `background:${meshCss(p.theme.c)};color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.35);padding-right:8px` },
+          el('button', { onclick: () => { Object.assign(t, structuredClone(p.theme)); change(); renderTab(); } }, p.name), el('button', { 'aria-label': 'Delete ' + p.name, onclick: () => { saved.splice(i, 1); saveSettings(); renderTab(); } }, ico('x', 14)))),
+        el('button', { class: 'chip', onclick: () => { const { k, c, a, b, n, f, tx, fx, o, lo } = t; saved.push({ name: 'Look ' + (saved.length + 1), theme: { k: k === 'photo' ? 'mesh' : k, c: [...c], a, b, n, f, tx, fx, o, lo } }); saveSettings(); toast('Look saved'); renderTab(); } }, ico('plus', 16), 'Save this look'))));
+      return wrap;
+    },
+    stickers: () => {
+      const wrap = el('div', {}), st = ev.stickers[sel];
+      wrap.append(el('div', { class: 'h' }, 'Add a sticker'), el('div', { class: 'group' }, el('div', { class: 'emoji-grid' }, EMOJI.map(e => el('button', { 'aria-label': 'Add ' + e, onclick: () => { const spots = [[80, 14], [18, 84], [82, 84], [16, 16]], sp = spots[ev.stickers.length % spots.length]; ev.stickers.push({ e, x: sp[0], y: sp[1], s: 20, r: 0 }); sel = ev.stickers.length - 1; change(); renderTab(); } }, e)))));
+      if (st) wrap.append(el('div', { class: 'h' }, 'Selected sticker'), el('div', { class: 'group' },
+        slider('Size', 6, 60, 1, st.s, v => v, v => { st.s = v; paintNow(); }), slider('Rotation', -180, 180, 1, st.r, v => v + '°', v => { st.r = v; paintNow(); }),
+        el('div', { class: 'row' }, el('button', { class: 'linkbtn', style: 'padding:14px 0;color:var(--red)', onclick: () => { ev.stickers.splice(sel, 1); sel = -1; change(); renderTab(); } }, 'Remove sticker'))));
+      else wrap.append(el('p', { class: 'note' }, ev.stickers.length ? 'Tap a sticker on the invite to resize or rotate it. Drag to move.' : 'Stickers go on top of your invite. Drag them anywhere.'));
+      return wrap;
+    },
+    share: () => {
+      const wrap = el('div', {}), lab = el('span', { class: 'val' }, 'Measuring…'), bar_ = el('i'), tip = el('p', { class: 'note' });
+      meter = { lab, bar: bar_, tip };
+      wrap.append(el('div', { class: 'h' }, 'Link'), el('div', { class: 'group' }, el('div', { class: 'row col' }, el('div', { class: 'top' }, el('span', {}, 'Link size'), lab), el('div', { class: 'meter' }, bar_))), tip,
+        el('div', { class: 'stack', style: 'margin-top:20px' },
+          el('button', { class: 'btn block', onclick: async () => { if (!ev.title.trim()) { toast('Add a title first'); return; } await shareLink(ev); ev.shared = Date.now(); dirty = true; } }, ico('share', 20), 'Share invite'),
+          el('div', { style: 'display:grid;grid-template-columns:1fr 1fr;gap:10px' },
+            el('button', { class: 'btn sec', onclick: async () => { await copyText(await buildLink(ev)); toast('Link copied'); } }, ico('copy', 18), 'Copy link'),
+            el('button', { class: 'btn sec', onclick: () => addToCalendar(ev) }, ico('calendar', 18), 'Calendar'))),
+        el('p', { class: 'note' }, 'The whole invite lives inside the link, so there’s nothing to upload. Tap Done to save it on this device.'));
+      updateMeter(); return wrap;
+    }
+  };
+  async function updateMeter() {
+    if (tab !== 'share' || !meter) return;
+    try {
+      const len = (await buildLink(ev)).length, pct = clamp(len / LINK_OK * 100, 4, 100), kb = (len / 1024).toFixed(1) + ' KB';
+      meter.lab.textContent = kb; meter.bar.style.width = pct + '%';
+      meter.bar.style.background = len <= LINK_GOOD ? 'var(--green)' : len <= LINK_OK ? 'var(--orange)' : 'var(--red)';
+      meter.tip.textContent = len <= LINK_GOOD ? 'Short enough to paste anywhere.' : len <= LINK_OK ? 'Works in Messages and most apps. Fewer stickers or a smaller photo makes it shorter.' : 'Very long. Some apps may cut it off. Remove the photo or add a sharp image link instead.';
+    } catch (e) { meter.lab.textContent = ''; }
+  }
+  function renderTab() { const st = body.scrollTop; body.replaceChildren(panels[tab]()); body.scrollTop = st; }
+  renderTab(); paintNow();
+
+  const cancel = () => { if (dirty && !confirm('Discard your changes?')) return; go(orig ? '#/e/' + orig.id : '#/'); };
+  const done = async () => {
+    if (!ev.title.trim()) { toast('Add a title first'); tab = 'details'; tabs.querySelectorAll('.seg-b')[0].click(); return; }
+    await DB.put('events', ev); navigator.storage?.persist?.();
+    go('#/e/' + ev.id);
+  };
+  const view = el('div', { class: 'view editor' }, bar({ solid: false, title: orig ? 'Edit invite' : 'New invite', left: el('button', { class: 'tbtn', onclick: cancel }, 'Cancel'), right: el('button', { class: 'btn sm', onclick: done }, 'Done') }), stage, sheet);
+  view._mount = () => { setSheet(detents()[1], false); requestAnimationFrame(fit); };
+  return view;
+}
+
+/* ---------- host view ---------- */
+async function HostView(id) {
+  const ev = await DB.get('events', id); if (!ev) return Message('Invite not found', 'It may have been deleted from this device.');
+  const P = mkPoster(ev, { live: true }); if (VT) P.wrap.style.viewTransitionName = 'poster';
+  const cd = el('span'), guests = el('section');
+  async function drawGuests() {
+    const rs = (await DB.all('replies')).filter(r => r.eventId === id).sort((a, z) => z.t - a.t), cnt = { g: 0, m: 0, n: 0 };
+    rs.forEach(r => { cnt[r.s] += r.s === 'g' ? 1 + (r.p || 0) : 1; });
+    const label = { g: 'Going', m: 'Maybe', n: 'Can’t go' };
+    const pasteBox = el('div', { class: 'pastebox', hidden: true }), ta = el('textarea', { placeholder: 'Paste a reply link here', 'aria-label': 'Reply link' });
+    async function addReply(text) {
+      const i = text.indexOf('#/r='); if (i < 0) return toast('That doesn’t look like a reply link');
+      try { const { obj } = await unpackBin(text.slice(i + 4).trim().split(/\s/)[0]); if (obj.e !== id) return toast('That reply is for a different invite'); await putReply(obj); toast(obj.n + ' added'); drawGuests(); }
+      catch (e) { toast('That reply link is damaged'); }
+    }
+    pasteBox.append(ta, el('div', { style: 'display:grid;grid-template-columns:1fr 1fr;gap:10px' },
+      el('button', { class: 'btn sec sm', onclick: async () => { try { ta.value = await navigator.clipboard.readText(); } catch (e) { toast('Paste into the box instead'); } } }, 'Paste'),
+      el('button', { class: 'btn sm', onclick: () => addReply(ta.value) }, 'Add reply')));
+    guests.replaceChildren(
+      el('div', { class: 'sechead' }, el('h3', {}, 'Guests'), el('button', { class: 'linkbtn', onclick: () => { pasteBox.hidden = !pasteBox.hidden; } }, 'Add a reply')),
+      el('div', { class: 'group stats' }, ['g', 'm', 'n'].map(k => el('div', {}, el('b', {}, cnt[k]), el('span', {}, label[k])))),
+      pasteBox,
+      rs.length ? el('div', { class: 'group', style: 'margin-top:12px' }, rs.map(r => el('div', { class: 'guest' }, el('div', { class: 'av', style: `background:${hue(r.n)}` }, (r.n[0] || '?').toUpperCase()),
+        el('div', { class: 'nm' }, r.n), el('span', { class: 'st ' + r.s }, label[r.s] + (r.p ? ` +${r.p}` : '')),
+        el('button', { class: 'rb sm', 'aria-label': 'Remove ' + r.n, style: 'background:none;box-shadow:none;color:var(--label2)', onclick: async () => { await DB.del('replies', r.key); drawGuests(); } }, ico('x', 16)))))
+        : el('p', { class: 'note' }, 'No replies yet. When a guest answers, tap their reply link to add them, or use Add a reply to paste it.'));
+  }
+  drawGuests();
+  const b = bar({ solid: true, title: ev.title, left: backBtn(), right: el('button', { class: 'rb', 'aria-label': 'Edit', onclick: () => go('#/edit/' + id) }, ico('pencil')) });
+  const view = el('div', { class: 'view' }, b, el('div', { class: 'hero' }, P.wrap), el('div', { class: 'until' }, cd),
+    el('div', { class: 'narrow' },
+      el('div', { class: 'actions' }, el('button', { class: 'btn block', onclick: async () => { if (await shareLink(ev)) { ev.shared = Date.now(); DB.put('events', ev); } } }, ico('share', 20), 'Share invite'),
+        el('div', { class: 'two' }, el('button', { class: 'btn sec', onclick: async () => { await copyText(await buildLink(ev)); toast('Link copied'); } }, ico('copy', 18), 'Copy link'), el('button', { class: 'btn sec', onclick: () => addToCalendar(ev) }, ico('calendar', 18), 'Calendar'))),
+      el('div', { style: 'margin-top:22px' }, detailRows(ev)), guests,
+      el('div', { class: 'foot' }, el('button', { class: 'btn danger sm', onclick: async () => { if (!confirm('Delete this invite from this device? Guests who already have the link can still open it.')) return; await DB.del('events', id); for (const r of await DB.all('replies')) if (r.eventId === id) await DB.del('replies', r.key); toast('Invite deleted'); go('#/'); } }, ico('trash', 16), 'Delete invite'))));
+  startCountdown(ev, cd);
+  return view;
+}
+async function putReply(r) {
+  const key = r.e + ':' + r.n.trim().toLowerCase();
+  await DB.put('replies', { key, eventId: r.e, n: r.n.trim(), s: r.s, p: r.p || 0, t: r.t || Date.now() });
+}
+
+/* ---------- guest view ---------- */
+async function GuestView(payload) {
+  const { obj, img } = await unpackBin(payload), ev = fromWire(obj, img);
+  if (await DB.get('events', ev.id)) return HostView(ev.id);       // the host opened their own link
+  let rec = (await DB.get('received', ev.id)) || { id: ev.id, savedAt: Date.now(), my: null };
+  rec.ev = ev; rec.payload = payload; await DB.put('received', rec);
+  const P = mkPoster(ev, { live: true }); if (VT) P.wrap.style.viewTransitionName = 'poster';
+  const cd = el('span');
+  let st = rec.my?.status || '', name = rec.my?.name || settings.name || '', plus = rec.my?.plus || 0;
+  const plusOut = el('b', {}, plus), sendBtn = el('button', { class: 'btn block', disabled: !st }, 'Send reply');
+  const sync = () => { sendBtn.disabled = !st || !name.trim(); };
+  const opts = [['g', '🎉', 'Going'], ['m', '🤔', 'Maybe'], ['n', '😢', 'Can’t go']];
+  const rsvp = el('div', { class: 'rsvp' }, opts.map(([k, e, l]) => el('button', { class: k === st ? 'on' : '', onclick: ev2 => { st = k; rsvp.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === ev2.currentTarget)); sync(); } }, el('span', {}, e), l)));
+  sync();
+  sendBtn.onclick = async () => {
+    name = name.trim(); settings.name = name; saveSettings();
+    const reply = { e: ev.id, n: name, s: st, p: plus, t: Date.now() };
+    rec.my = { name, status: st, plus }; await DB.put('received', rec);
+    const link = baseUrl() + '#/r=' + await packBin(reply), word = { g: 'Going', m: 'Maybe', n: 'Can’t go' }[st];
+    const text = `${name}: ${word}${plus ? ` (+${plus})` : ''} for “${ev.title}”. Tap to add me to your guest list:`, to = (ev.reply || '').trim();
+    if (to.includes('@')) location.href = `mailto:${to}?subject=${encodeURIComponent('RSVP: ' + ev.title)}&body=${encodeURIComponent(text + '\n' + link)}`;
+    else if (to) location.href = `sms:${to.replace(/[^\d+]/g, '')}?&body=${encodeURIComponent(text + ' ' + link)}`;
+    else if (navigator.share) { try { await navigator.share({ text: text + ' ' + link }); } catch (e) {} }
+    else { await copyText(text + ' ' + link); toast('Reply copied. Paste it to the host.'); }
+  };
+  const note = IOS && !STANDALONE ? el('p', { class: 'note', style: 'text-align:center' }, 'Tip: add Soirée to your Home Screen to keep this invite saved.') : null;
+  const view = el('div', { class: 'view' }, bar({ solid: true, title: ev.title, left: backBtn(), right: gearBtn() }), el('div', { class: 'hero' }, P.wrap), el('div', { class: 'until' }, cd),
+    el('div', { class: 'narrow' }, el('div', { style: 'margin-top:12px' }, detailRows(ev)),
+      el('div', { class: 'sechead' }, el('h3', {}, 'Will you come?')), rsvp,
+      el('div', { class: 'group', style: 'margin-top:12px' },
+        el('div', { class: 'row' }, el('input', { placeholder: 'Your name', value: name, 'aria-label': 'Your name', autocomplete: 'name', oninput: e => { name = e.target.value; sync(); } })),
+        el('div', { class: 'row' }, el('span', {}, 'Bringing guests'), el('div', { class: 'stepper' }, el('button', { 'aria-label': 'Fewer', onclick: () => { plus = Math.max(0, plus - 1); plusOut.textContent = plus; } }, '−'), plusOut, el('button', { 'aria-label': 'More', onclick: () => { plus = Math.min(9, plus + 1); plusOut.textContent = plus; } }, '+')))),
+      el('div', { class: 'stack', style: 'margin-top:14px' }, sendBtn, el('button', { class: 'btn sec block', onclick: () => addToCalendar(ev) }, ico('calendar', 18), 'Add to calendar')),
+      note, el('div', { class: 'foot' }, el('button', { class: 'linkbtn', onclick: () => go('#/new') }, 'Make your own invite'))));
+  startCountdown(ev, cd);
+  return view;
+}
+
+/* ---------- reply landing ---------- */
+async function ReplyView(payload) {
+  const { obj } = await unpackBin(payload), ev = await DB.get('events', obj.e), word = { g: 'Going', m: 'Maybe', n: 'Can’t go' }[obj.s] || '';
+  if (ev) { await putReply(obj); toast(obj.n + ' added to your guests'); location.replace('#/e/' + ev.id); return HostView(ev.id); }
+  const full = baseUrl() + '#/r=' + payload;
+  return el('div', { class: 'view' }, bar({ left: backBtn() }), el('div', { class: 'empty' },
+    el('div', { class: 'av', style: `background:${hue(obj.n)};width:72px;height:72px;font-size:30px` }, (obj.n[0] || '?').toUpperCase()),
+    el('h2', { class: 'large', style: 'margin:6px 0 0' }, `${obj.n}: ${word}${obj.p ? ` +${obj.p}` : ''}`),
+    el('p', {}, 'This reply belongs to an invite saved in your Soirée app. Copy it, open the app from your Home Screen, then use Add a reply on that invite.'),
+    el('button', { class: 'btn', onclick: async () => { await copyText(full); toast('Reply copied'); } }, ico('copy', 18), 'Copy reply')));
+}
+
+/* ---------- settings ---------- */
+function openSettings() {
+  const scrim = el('div', { class: 'scrim' }), card = el('div', { class: 'modal-card', role: 'dialog', 'aria-label': 'Settings' }), body = el('div', { class: 'modal-body' });
+  const close = () => { scrim.classList.remove('in'); card.classList.remove('in'); card.style.transform = ''; setTimeout(() => { scrim.remove(); card.remove(); }, 600); };
+  scrim.onclick = close;
+  const head = el('div', { class: 'modal-head' }, el('span', { style: 'width:60px' }), el('h2', {}, 'Settings'), el('button', { class: 'tbtn b', style: 'width:60px;text-align:right', onclick: close }, 'Done'));
+  let y0 = null;
+  head.addEventListener('pointerdown', e => { y0 = e.clientY; head.setPointerCapture(e.pointerId); card.style.transition = 'none'; });
+  head.addEventListener('pointermove', e => { if (y0 != null) card.style.transform = `translateY(${Math.max(0, e.clientY - y0)}px)`; });
+  head.addEventListener('pointerup', e => { if (y0 == null) return; const dy = e.clientY - y0; y0 = null; card.style.transition = ''; if (dy > 120) close(); else card.style.transform = ''; });
+  card.append(el('div', { class: 'grab', style: 'margin:8px auto 0' }), head, body);
+
+  function draw() {
+    const r = settings.ring, m = islandModel(), kids = [];
+    kids.push(el('div', { class: 'h' }, 'Appearance'), seg([['system', 'System'], ['light', 'Light'], ['dark', 'Dark']], settings.theme, v => { settings.theme = v; saveSettings(); applyTheme(); }, 'big'));
+    kids.push(el('div', { class: 'h' }, 'Accent color'), el('div', { class: 'group' }, el('div', { class: 'accents' },
+      ['#0a84ff', '#5e5ce6', '#bf5af2', '#ff375f', '#ff9f0a', '#30b158', '#00b5a5', '#8e8e93'].map(c => el('button', { class: settings.accent === c ? 'on' : '', style: `background:${c};color:${c}`, 'aria-label': c, onclick: () => { settings.accent = c; saveSettings(); applyTheme(); applyRing(); draw(); } })),
+      el('input', { type: 'color', value: settings.accent, 'aria-label': 'Custom accent', oninput: e => { settings.accent = e.target.value; saveSettings(); applyTheme(); applyRing(); } }))));
+    kids.push(el('div', { class: 'h' }, 'You'), el('div', { class: 'group' }, el('div', { class: 'row' }, el('input', { placeholder: 'Your name for RSVPs', value: settings.name, 'aria-label': 'Your name', oninput: e => { settings.name = e.target.value; saveSettings(); } }))));
+
+    kids.push(el('div', { class: 'h' }, 'Dynamic Island outline'));
+    const mock = el('div', { class: 'mock' }, el('div', { class: 'pill' })); const redrawMock = () => { mock.querySelector('.island')?.remove(); if (r.on) { const n = ringNode(r, 126, 37, r.w); n.style.top = (18 - r.w + 1) + 'px'; mock.append(n); } }; redrawMock();
+    kids.push(el('div', { class: 'group' }, mock,
+      el('div', { class: 'row' }, el('span', {}, 'Show outline'), el('span', { style: 'margin-left:auto' }, toggle(r.on, v => { r.on = v; saveSettings(); applyRing(); redrawMock(); }))),
+      el('div', { class: 'row' }, el('span', { class: 'lab' }, 'Style'), el('div', { style: 'margin-left:auto;width:230px' }, seg([['color', 'Color'], ['rainbow', 'Rainbow'], ['aurora', 'Aurora']], r.style, v => { r.style = v; saveSettings(); applyRing(); redrawMock(); draw(); }))),
+      r.style === 'color' ? el('div', { class: 'row' }, el('span', {}, 'Color'), el('span', { style: 'margin-left:auto' }, el('input', { type: 'color', value: r.color || settings.accent, 'aria-label': 'Outline color', oninput: e => { r.color = e.target.value; saveSettings(); applyRing(); redrawMock(); } }))) : null,
+      el('div', { class: 'row' }, el('span', {}, 'Animate'), el('span', { style: 'margin-left:auto' }, toggle(r.anim, v => { r.anim = v; saveSettings(); applyRing(); redrawMock(); }))),
+      slider('Thickness', 1.5, 6, .5, r.w, v => v + ' pt', v => { r.w = v; saveSettings(); applyRing(); redrawMock(); }),
+      m ? slider('Nudge up or down', -6, 6, .5, r.dy, v => v, v => { r.dy = v; saveSettings(); applyRing(); }) : null,
+      m ? slider('Size', .9, 1.2, .01, r.sc, v => Math.round(v * 100) + '%', v => { r.sc = v; saveSettings(); applyRing(); }) : null));
+    kids.push(el('p', { class: 'note' }, m ? `Found a Dynamic Island screen (${screenKey().replace('x', ' × ')}: ${m.name}).${STANDALONE || SIM ? '' : ' The outline appears when Soirée is opened from the Home Screen.'} Positions are approximate; use the sliders to line it up.`
+      : `No Dynamic Island found on this device (screen ${screenKey().replace('x', ' × ')}). The preview above shows your style; it appears on supported iPhones when opened from the Home Screen. Display Zoom can hide it.`));
+
+    kids.push(el('div', { class: 'h' }, 'This device'), el('div', { class: 'group' },
+      el('div', { class: 'row' }, el('span', {}, 'Device'), el('span', { class: 'val' }, DEVICE)),
+      el('div', { class: 'row' }, el('span', {}, 'Installed as app'), el('span', { class: 'val' }, STANDALONE ? 'Yes' : 'No')),
+      el('div', { class: 'row' }, el('span', {}, 'Saved on device'), el('span', { class: 'val', id: 'st-use' }, '…')),
+      el('div', { class: 'row' }, el('span', {}, 'Storage protected'), el('span', { class: 'val', id: 'st-per' }, '…')),
+      DB.mem ? el('div', { class: 'row' }, el('span', { style: 'color:var(--red)' }, 'Private mode: invites won’t be kept')) : null));
+    (async () => {
+      try { const e = await navigator.storage.estimate(); $('#st-use') && ($('#st-use').textContent = e.usage < 1024 * 1024 ? Math.max(1, Math.round(e.usage / 1024)) + ' KB' : (e.usage / 1048576).toFixed(1) + ' MB'); } catch (x) { $('#st-use') && ($('#st-use').textContent = 'Unknown'); }
+      try { const p = await navigator.storage.persisted(); $('#st-per') && ($('#st-per').textContent = p ? 'Yes' : 'Not yet'); } catch (x) { $('#st-per') && ($('#st-per').textContent = 'Unknown'); }
+    })();
+    const imp = el('input', { type: 'file', accept: 'application/json,.json', hidden: true, onchange: async e => {
+      const f = e.target.files[0]; if (!f) return;
+      try { const d = JSON.parse(await f.text()); for (const x of d.events || []) await DB.put('events', x); for (const x of d.received || []) await DB.put('received', x); for (const x of d.replies || []) await DB.put('replies', x); if (d.settings) { Object.assign(settings, d.settings, { ring: { ...DEFAULTS.ring, ...(d.settings.ring || {}) } }); saveSettings(); applyTheme(); applyRing(); } toast('Backup restored'); close(); render(); }
+      catch (err) { toast('That file isn’t a Soirée backup'); }
+    } });
+    kids.push(el('div', { class: 'h' }, 'Backup'), el('div', { class: 'group' },
+      el('div', { class: 'row' }, el('button', { class: 'linkbtn', style: 'padding:14px 0', onclick: async () => { const data = { v: 1, events: await DB.all('events'), received: await DB.all('received'), replies: await DB.all('replies'), settings }; saveBlob('soiree-backup.json', JSON.stringify(data), 'application/json'); } }, 'Export all invites')),
+      el('div', { class: 'row' }, el('button', { class: 'linkbtn', style: 'padding:14px 0', onclick: () => imp.click() }, 'Restore from backup'), imp),
+      el('div', { class: 'row' }, el('button', { class: 'linkbtn', style: 'padding:14px 0;color:var(--red)', onclick: async () => { if (!confirm('Erase every invite and reply on this device?')) return; for (const s of ['events', 'received', 'replies']) await DB.clear(s); toast('Erased'); close(); render(); } }, 'Erase everything'))));
+    body.replaceChildren(...kids);
+  }
+  draw();
+  document.body.append(scrim, card);
+  requestAnimationFrame(() => requestAnimationFrame(() => { scrim.classList.add('in'); card.classList.add('in'); }));
+}
+
+/* ---------- boot ---------- */
+applyTheme();
+initDB().then(() => { applyRing(); render(); });
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
